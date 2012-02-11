@@ -20,6 +20,7 @@
 
 static int cdata_open(struct inode *inode, struct file *filp)
 {
+   	printk(KERN_INFO "CDATA: In OPEN.\n");
 	return 0;
 }
 
@@ -42,7 +43,7 @@ static struct file_operations cdata_fops = {
 int cdata_init_module(void)
 {
   if(register_chrdev(DEV_MAJOR, DEV_NAME, &cdata_fops) < 0){
-   printk(KERN_INFO "CDATA: Couldn't register a device.");
+   printk(KERN_INFO "CDATA: Couldn't register a device.\n");
    return -1; 
   }
   return 0;
