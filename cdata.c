@@ -21,7 +21,6 @@
 static int cdata_open(struct inode *inode, struct file *filp)
 {
    	printk(KERN_INFO "CDATA: In OPEN.\n");
-	while(1);
 	return 0;
 }
 
