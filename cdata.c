@@ -25,7 +25,7 @@ static int cdata_close(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-static int cdata_write(struct inode *inode, struct file *filp)
+static int cdata_write(struct file *filp, const char *buff, size_t size, loff_t *)
 {
 	return 0;
 }
