@@ -28,7 +28,7 @@ int cdata_close(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-ssize_t int cdata_write(struct file *filp, const char *buff, size_t size, loff_t *)
+ssize_t cdata_write(struct file *filp, const char *buff, size_t size, loff_t *off)
 {
 	return 0;
 }
