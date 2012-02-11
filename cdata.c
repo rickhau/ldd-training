@@ -20,8 +20,20 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+static int cdata_close(struct inode *inode, struct file *filp)
+{
+	return 0;
+}
+
+static int cdata_write(struct inode *inode, struct file *filp)
+{
+	return 0;
+}
+
 static struct file_operations cdata_fops = {	
 	open:		cdata_open,
+	release:	cdata_close,
+	write:		cdata_write,
 };
 
 int cdata_init_module(void)
