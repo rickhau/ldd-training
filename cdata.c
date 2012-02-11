@@ -23,12 +23,12 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-static int cdata_close(struct inode *inode, struct file *filp)
+int cdata_close(struct inode *inode, struct file *filp)
 {
 	return 0;
 }
 
-static int cdata_write(struct file *filp, const char *buff, size_t size, loff_t *)
+ssize_t int cdata_write(struct file *filp, const char *buff, size_t size, loff_t *)
 {
 	return 0;
 }
