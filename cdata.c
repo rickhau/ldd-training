@@ -35,15 +35,28 @@ int cdata_close(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+ssize_t cdata_read(struct file *filp, char *buff, size_t size, loff_t *off)
+{
+	return 0;
+}
+
 ssize_t cdata_write(struct file *filp, const char *buff, size_t size, loff_t *off)
 {
 	return 0;
 }
 
+int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
+{
+	return 0;
+}
+
 static struct file_operations cdata_fops = {	
+	owner:		THIS_MODULE,
 	open:		cdata_open,
 	release:	cdata_close,
+	read:		cdata_read,
 	write:		cdata_write,
+	ioctl:		cdata_ioctl,
 };
 
 int cdata_init_module(void)
