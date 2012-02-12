@@ -29,6 +29,7 @@ static int cdata_open(struct inode *inode, struct file *filp)
 
 int cdata_close(struct inode *inode, struct file *filp)
 {
+	printk(KERN_INFO "CDATA: cdata_close() is invoked.\n"); 
 	return 0;
 }
 
@@ -47,6 +48,12 @@ int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsign
 	return 0;
 }
 
+int cdata_flush(struct file *filp)
+{
+	printk(KERN_INFO "CDATA: cdata_flush() called back!!\n");
+	return 0;
+}
+
 static struct file_operations cdata_fops = {	
 	owner:		THIS_MODULE,
 	open:		cdata_open,
@@ -54,6 +61,7 @@ static struct file_operations cdata_fops = {
 	read:		cdata_read,
 	write:		cdata_write,
 	ioctl:		cdata_ioctl,
+	flush:		cdata_flush,
 };
 
 int cdata_init_module(void)
