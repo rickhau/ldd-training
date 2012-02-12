@@ -21,12 +21,9 @@
 static int cdata_open(struct inode *inode, struct file *filp)
 {
    	printk(KERN_INFO "CDATA: In OPEN.\n");
-	int i;
-	for(i = 0; i<5000; i++){
-	  //current->state = TASK_UNINTERRUPTIBLE;
-	  schedule();	
-	  // ;
-        }
+	int minor;
+	minor = MINOR(inode->i_rdev);
+	printk(KERN_INFO "CDATA: Minor number: %d\n", minor);
 	return 0;
 }
 
