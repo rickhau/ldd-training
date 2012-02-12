@@ -40,6 +40,9 @@ ssize_t cdata_read(struct file *filp, char *buff, size_t size, loff_t *off)
 
 ssize_t cdata_write(struct file *filp, const char *buff, size_t size, loff_t *off)
 {
+	int i;
+	for(i=0; i<5000; i++)
+		;
 	return 0;
 }
 
