@@ -19,12 +19,20 @@
 #define DEV_MAJOR 121
 #define DEV_NAME "cdata"
 
+//struct cdata_t {
+//  unsigned long *fb;
+//}
+
+
 static int cdata_open(struct inode *inode, struct file *filp)
 {
 	int minor;
    	printk(KERN_INFO "CDATA: In OPEN.\n");
 	minor = MINOR(inode->i_rdev);
 	printk(KERN_INFO "CDATA: Minor number: %d\n", minor);
+
+	//cdata = kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
+	//cdata -> fb = ioremap(0x33ff00000, 320*24*4);
 	return 0;
 }
 
@@ -52,17 +60,16 @@ static ssize_t cdata_write(struct file *filp, const char *buff, size_t size, lof
 
 static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 {
-  int i;
+  int i,n ;
   unsigned long *fb;
+  n = *((int *) arg); // FIXME
   switch (cmd) {
     case CDATA_CLEAR:
-       printk(KERN_INFO "Action: CDATA_CLEAR\n");
-       fb = ioremap(0x33f00000, 320*240*4);
-       for( i = 0; i<320*240; i++)
-         writel(0x00000000, fb++);
+       printk(KERN_INFO "Action: CDATA_CLEAR: %d pixel.\n", n);
+       fb = ioremap(0x33f00000, n*4);
+       for( i = 0; i<n; i++)
+         writel(0x00ff0000, fb++);
        break;
-    default:
-       return -1;
   }
   return 0;
 }
@@ -85,11 +92,11 @@ static struct file_operations cdata_fops = {
 
 static int cdata_init_module(void)
 {
-  unsigned long *fb;
-  int i;
-  fb = ioremap(0x33f00000, 320*240*4);
-  for( i = 0; i<320*240; i++)
-    writel(0x00ff0000, fb++);
+  //unsigned long *fb;
+  //int i;
+  //fb = ioremap(0x33f00000, 320*240*4);
+  //for( i = 0; i<320*240; i++)
+  //  writel(0x00ff0000, fb++);
 
   if(register_chrdev(DEV_MAJOR, DEV_NAME, &cdata_fops) < 0){
    printk(KERN_INFO "CDATA: Couldn't register a device.\n");
