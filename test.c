@@ -8,10 +8,12 @@
 int main(void)
 {
   int fd;
-  fd = open("/dev/cdata3", O_RDWR);
-  fd = open("/dev/cdata3", O_RDWR);
+  //fd = open("/dev/cdata3", O_RDWR);
+  //fd = open("/dev/cdata3", O_RDWR);
   //fd = open("/dev/cdata", O_RDONLY);
-  sleep(10);
-  close(fd);
+  fd = open("/dev/cdata", O_RDONLY);
+  write(fd, "123", 3);
+  //sleep(10);
+  //close(fd);
   close(fd);
 }

@@ -27,31 +27,34 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	return 0;
 }
 
-int cdata_close(struct inode *inode, struct file *filp)
+static int cdata_close(struct inode *inode, struct file *filp)
 {
 	printk(KERN_INFO "CDATA: cdata_close() is invoked.\n"); 
 	return 0;
 }
 
-ssize_t cdata_read(struct file *filp, char *buff, size_t size, loff_t *off)
+static ssize_t cdata_read(struct file *filp, char *buff, size_t size, loff_t *off)
 {
 	return 0;
 }
 
-ssize_t cdata_write(struct file *filp, const char *buff, size_t size, loff_t *off)
+static ssize_t cdata_write(struct file *filp, const char *buff, size_t size, loff_t *off)
 {
-	int i;
-	for(i=0; i<5000; i++)
-		;
+	//unsigned int i;
+        while(1) {
+	  //current->state=TASK_UNINTERRUPTIBLE;
+	  current->state=TASK_INTERRUPTIBLE;
+	  schedule();
+	}
 	return 0;
 }
 
-int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
+static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	return 0;
 }
 
-int cdata_flush(struct file *filp)
+static int cdata_flush(struct file *filp)
 {
 	printk(KERN_INFO "CDATA: cdata_flush() called back!!\n");
 	return 0;
@@ -67,16 +70,21 @@ static struct file_operations cdata_fops = {
 	flush:		cdata_flush,
 };
 
-int cdata_init_module(void)
+static int cdata_init_module(void)
 {
+  unsigned long *fb;
+  fb = ioremap(0x33f00000, 10000);
+  writel(0x00ff0000, fb);
+
   if(register_chrdev(DEV_MAJOR, DEV_NAME, &cdata_fops) < 0){
    printk(KERN_INFO "CDATA: Couldn't register a device.\n");
    return -1; 
   }
+  printk(KERN_INFO "CDATA: In cdata_init_module.\n");
   return 0;
 }
 
-void cdata_cleanup_module(void)
+static void cdata_cleanup_module(void)
 {
   unregister_chrdev(DEV_MAJOR, DEV_NAME);
 }
