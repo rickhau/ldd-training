@@ -14,6 +14,7 @@
 #include <linux/input.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
+#include "cdata_ioctl.h"
 
 #define DEV_MAJOR 121
 #define DEV_NAME "cdata"
@@ -51,7 +52,19 @@ static ssize_t cdata_write(struct file *filp, const char *buff, size_t size, lof
 
 static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd, unsigned long arg)
 {
-	return 0;
+  int i;
+  unsigned long *fb;
+  switch (cmd) {
+    case CDATA_CLEAR:
+       printk(KERN_INFO "Action: CDATA_CLEAR\n");
+       fb = ioremap(0x33f00000, 320*240*4);
+       for( i = 0; i<320*240; i++)
+         writel(0x00000000, fb++);
+       break;
+    default:
+       return -1;
+  }
+  return 0;
 }
 
 static int cdata_flush(struct file *filp)
