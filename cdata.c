@@ -69,7 +69,10 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
     case CDATA_CLEAR:
        printk(KERN_INFO "Action: CDATA_CLEAR: %d pixel.\n", n);
        //fb = ioremap(0x33f00000, n*4);
+       // fork & multithread needs to file locking on fb
+       // FIXME: Lock
        fb = cdata->fb;
+       // FIXME: unlock
        for( i = 0; i<n; i++)
          writel(0x00ff0000, fb++);
        break;
