@@ -19,20 +19,21 @@
 #define DEV_MAJOR 121
 #define DEV_NAME "cdata"
 
-//struct cdata_t {
-//  unsigned long *fb;
-//}
+struct cdata_t {
+  unsigned long *fb;
+};
 
 
 static int cdata_open(struct inode *inode, struct file *filp)
 {
 	int minor;
+	struct cdata_t *cdata;
    	printk(KERN_INFO "CDATA: In OPEN.\n");
 	minor = MINOR(inode->i_rdev);
 	printk(KERN_INFO "CDATA: Minor number: %d\n", minor);
 
-	//cdata = kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
-	//cdata -> fb = ioremap(0x33ff00000, 320*24*4);
+	cdata = kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
+	cdata->fb = ioremap(0x33ff00000, 320*24*4);
 	return 0;
 }
 
@@ -62,11 +63,13 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 {
   int i,n ;
   unsigned long *fb;
+  struct cdata_t *cdata = (struct cdata*) filp->private_data;
   n = *((int *) arg); // FIXME
   switch (cmd) {
     case CDATA_CLEAR:
        printk(KERN_INFO "Action: CDATA_CLEAR: %d pixel.\n", n);
-       fb = ioremap(0x33f00000, n*4);
+       //fb = ioremap(0x33f00000, n*4);
+       fb = cdata->fb;
        for( i = 0; i<n; i++)
          writel(0x00ff0000, fb++);
        break;
