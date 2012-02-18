@@ -73,8 +73,10 @@ static struct file_operations cdata_fops = {
 static int cdata_init_module(void)
 {
   unsigned long *fb;
-  fb = ioremap(0x33f00000, 10000);
-  writel(0x00ff0000, fb);
+  int i;
+  fb = ioremap(0x33f00000, 320*240*4);
+  for( i = 0; i<320*240; i++)
+    writel(0x00ff0000, fb++);
 
   if(register_chrdev(DEV_MAJOR, DEV_NAME, &cdata_fops) < 0){
    printk(KERN_INFO "CDATA: Couldn't register a device.\n");
