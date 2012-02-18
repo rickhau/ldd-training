@@ -34,6 +34,7 @@ static int cdata_open(struct inode *inode, struct file *filp)
 
 	cdata = kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
 	cdata->fb = ioremap(0x33ff00000, 320*24*4);
+	filp->private_data = (void *)cdata;
 	return 0;
 }
 
