@@ -91,7 +91,7 @@ void flush_lcd(unsigned long *priv)
 
 void cdata_wake_up(unsigned long priv)
 {
-   // FIXME: Wake up process (Switch process to ready)
+   // Wake up process (Switch process to ready)
    struct cdata_t *cdata = (struct cdata_t *)priv;
    struct timer_list *sched;
    wait_queue_head_t *wq;
@@ -142,7 +142,7 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	     // Timer expires, call flush_lcd() 
 	     // When flush_lcd() finish the write I/O, then wake up the process
 	     // Then you do notn need to maintain 2nd timer for process state change
-	     sched->expires = jiffies + 10;  // 1*HZ = 1 second
+	     sched->expires = jiffies + 10;  // 10 == 0.1 second
 	     sched->function = cdata_wake_up;
 	     sched->data = (unsigned long)cdata;
 	     add_timer(sched);
@@ -156,6 +156,8 @@ repeat:
 	     current->state = TASK_INTERRUPTIBLE;
 	     schedule();
 
+	     // Every time, sched timer expires, it will read the index and check if index != 0 
+	     // Meaning flush_lcd has not finished yet. So, keep changing itself to ready state for next wake up.
 	     index = cdata->index;   // IMPORTANT: Use state machine concept to maintain. Do not use index = 0; not good!
 
 	     if (index != 0)
