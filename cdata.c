@@ -46,8 +46,10 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	cdata->fb = ioremap(0x33f00000, 320*240*4);
 	cdata->index = 0;
 	cdata->offset = 0;
+
 	init_timer(&cdata->flush_timer);
 	init_timer(&cdata->sched_timer);
+
 	filp->private_data = (void *)cdata;
 	return 0;
 }
@@ -88,6 +90,8 @@ void cdata_wake_up(unsigned long priv)
    struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
    struct timer_list *sched;
 
+   // because kernel time expire belongs to I/O interrupt, 
+   // You CAN NOT switch process state in I/O interrupt
    current->state = TASK_RUNNING;
    schedule();
 
