@@ -78,6 +78,11 @@ void flush_lcd(void *priv)
 	cdata->offset = offset;
 }
 
+void cdata_wake_up()
+{
+   // FIXME: Wake up process (Switch process to ready)
+}
+
 static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff_t *off)
 {
   	struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
