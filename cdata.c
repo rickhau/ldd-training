@@ -80,7 +80,7 @@ void flush_lcd(unsigned long *priv)
 	cdata->offset = offset;
 }
 
-void cdata_wake_up()
+void cdata_wake_up(unsigned long priv)
 {
    // FIXME: Wake up process (Switch process to ready)
 }
@@ -95,7 +95,7 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	
 	pixel = cdata->buf;
 	index = cdata->index;
-	timer = cdata->flush_timer;
+	timer = &cdata->flush_timer;
 	printk(KERN_INFO "CDATA: In cdata_write()\n");
         	
 	for (i = 0; i < size; i++){
@@ -133,7 +133,7 @@ static int cdata_close(struct inode *inode, struct file *filp)
   	struct cdata_t* cdata = (struct cdata_t *)filp->private_data;
 	printk(KERN_INFO "CDATA: cdata_close() is invoked.\n"); 
 
-	flush_lcd((void *)cdata);
+	flush_lcd((unsigned long)cdata);
 
 	del_timer(&cdata->flush_timer);
 
