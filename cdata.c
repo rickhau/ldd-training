@@ -201,9 +201,9 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 
   switch (cmd) {
     case CDATA_CLEAR:
-       //n = *((int *) arg); // FIXME; dirty
-       //copy_from_user(&n, &arg, 1);
-       get_user(n,(int*)arg);
+       //n = *((int *) arg); // dirty
+       copy_from_user(&n, (int*)arg, 4);
+       //get_user(n,(int*)arg);
        printk(KERN_INFO "Action: CDATA_CLEAR: %d pixel.\n", n);
        //fb = ioremap(0x33f00000, n*4);  // FIXME: dirty
 
