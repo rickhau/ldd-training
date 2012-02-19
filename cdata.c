@@ -102,8 +102,9 @@ void cdata_wake_up(unsigned long priv)
    // because kernel time expire belongs to I/O interrupt, 
    // You CAN NOT switch process state in I/O interrupt
    // Also, No context switching in I/O interrupt as well
-   current->state = TASK_RUNNING;
-   schedule();
+   //current->state = TASK_RUNNING;
+   //schedule();
+   wake_up(wq);
 
    sched->expires = jiffies + 10;
    add_timer(sched);
