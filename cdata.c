@@ -18,10 +18,16 @@
 
 #define DEV_MAJOR 121
 #define DEV_NAME "cdata"
-#define VERSION 2
+#define VERSION 4 
+
+#define BUF_SIZE (128)
+#define LCD_SIZE (320*240*4)
 
 struct cdata_t {
   unsigned long *fb;
+  unsigned char *buf;
+  unsigned int index;
+  unsigned int offset;
 };
 
 
@@ -34,14 +40,11 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	printk(KERN_INFO "CDATA: Minor number: %d\n", minor);
 
 	cdata = kmalloc(sizeof(struct cdata_t), GFP_KERNEL);
+	cdata->buf = kmalloc(BUF_SIZE, GFP_KERNEL);
 	cdata->fb = ioremap(0x33f00000, 320*240*4);
+	cdata->index = 0;
+	cdata->offset = 0;
 	filp->private_data = (void *)cdata;
-	return 0;
-}
-
-static int cdata_close(struct inode *inode, struct file *filp)
-{
-	printk(KERN_INFO "CDATA: cdata_close() is invoked.\n"); 
 	return 0;
 }
 
@@ -50,14 +53,70 @@ static ssize_t cdata_read(struct file *filp, char *buff, size_t size, loff_t *of
 	return 0;
 }
 
-static ssize_t cdata_write(struct file *filp, const char *buff, size_t size, loff_t *off)
+void flush_lcd(void *priv)
 {
-	//unsigned int i;
-        while(1) {
-	  //current->state=TASK_UNINTERRUPTIBLE;
-	  current->state=TASK_INTERRUPTIBLE;
-	  schedule();
+  	struct cdata_t *cdata = (struct cdata_t *)priv;
+	unsigned char *fb;
+	unsigned char *pixel;
+	int index;
+	int offset;
+	int i;
+
+	fb = (unsigned char*)cdata->fb;
+	pixel = cdata->buf;
+	index = cdata->index;
+	offset = cdata->offset;
+
+	for( i = 0; i < index; i++ ){
+	  writeb(pixel[i], fb+offset);
+	  offset++;
+	  if(offset >= LCD_SIZE)
+	    offset = 0;
+
 	}
+	cdata->index = 0;
+	cdata->offset = offset;
+}
+
+static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff_t *off)
+{
+  	struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
+	unsigned char *pixel;
+	unsigned int i;
+	unsigned int index;
+	
+	pixel = cdata->buf;
+	index = cdata->index;
+	printk(KERN_INFO "CDATA: In cdata_write()\n");
+        	
+	for (i = 0; i < size; i++){
+	  if (index >= BUF_SIZE){
+	     cdata->index = index;
+	     flush_lcd((void *)cdata);
+	     index = cdata->index;   // IMPORTANT: Use state machine concept to maintain. Do not use index = 0; not good!
+          }
+	  //fb[index] = buf[i];  // wrong!! Can NOT access user space data directly
+	  copy_from_user(&pixel[index], &buf[i], 1);
+	  index++;
+	}
+	cdata->index = index;
+        //while(1) {
+	  //current->state=TASK_UNINTERRUPTIBLE;
+	//  current->state=TASK_INTERRUPTIBLE;
+	//  schedule();
+	//}
+	return 0;
+}
+
+static int cdata_close(struct inode *inode, struct file *filp)
+{
+  	struct cdata_t* cdata = (struct cdata_t *)filp->private_data;
+	printk(KERN_INFO "CDATA: cdata_close() is invoked.\n"); 
+
+	flush_lcd((void *)cdata);
+
+	kfree(cdata->buf);
+	kfree(cdata);
 	return 0;
 }
 
@@ -65,10 +124,10 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 {
   int i,n ;
   unsigned long *fb;
-  struct cdata_t *cdata = (struct cdata*) filp->private_data;
-  n = *((int *) arg); // FIXME; dirty
+  struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
   switch (cmd) {
     case CDATA_CLEAR:
+       n = *((int *) arg); // FIXME; dirty
        printk(KERN_INFO "Action: CDATA_CLEAR: %d pixel.\n", n);
        //fb = ioremap(0x33f00000, n*4);  // FIXME: dirty
 
@@ -77,7 +136,17 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
        fb = cdata->fb;
        // FIXME: unlock
        for( i = 0; i < n; i++)
-         writel(0x00ff0000, fb++);
+         writel(0x00ff00ff, fb++);  
+       break;
+    case CDATA_RED:
+       break;
+    case CDATA_GREEN:
+       break;
+    case CDATA_BLUE:
+       break;
+    case CDATA_BLACK:
+       break;
+    case CDATA_WHITE:
        break;
   }
   return 0;
@@ -101,11 +170,11 @@ static struct file_operations cdata_fops = {
 
 static int cdata_init_module(void)
 {
-  //unsigned long *fb;
-  //int i;
-  //fb = ioremap(0x33f00000, 320*240*4);
-  //for( i = 0; i<320*240; i++)
-  //  writel(0x00ff0000, fb++);
+  unsigned long *fb;
+  int i;
+  fb = ioremap(0x33f00000, 320*240*4);
+  for( i = 0; i<320*240; i++)
+    writel(0x00ff0000, fb++);
   printk(KERN_INFO "CDATA: Exercise [ %d ]\n", VERSION);
   if(register_chrdev(DEV_MAJOR, DEV_NAME, &cdata_fops) < 0){
    printk(KERN_INFO "CDATA: Couldn't register a device.\n");
