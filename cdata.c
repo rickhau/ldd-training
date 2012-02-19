@@ -18,7 +18,7 @@
 
 #define DEV_MAJOR 121
 #define DEV_NAME "cdata"
-#define VERSION 4 
+#define VERSION 5 
 
 #define BUF_SIZE (128)
 #define LCD_SIZE (320*240*4)
@@ -102,13 +102,17 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	  if (index >= BUF_SIZE){
 
 	     cdata->index = index;
-	     // FIXME: Kernel scheduling
-
-	     timer->expires = jiffies + 1*HZ;
+	     // Kernel scheduling
+	     timer->expires = jiffies + 1*HZ;  // 1*HZ = 1 second
 	     timer->function = flush_lcd;
 	     timer->data = (unsigned long)cdata;
 
+	     add_timer(timer);
+
 	     // FIXME: Process scheduling
+	     current->state = TASK_INTERRUPTIBLE;
+	     schedule();
+
 	     index = cdata->index;   // IMPORTANT: Use state machine concept to maintain. Do not use index = 0; not good!
           }
 	  //fb[index] = buf[i];  // wrong!! Can NOT access user space data directly
@@ -130,6 +134,8 @@ static int cdata_close(struct inode *inode, struct file *filp)
 	printk(KERN_INFO "CDATA: cdata_close() is invoked.\n"); 
 
 	flush_lcd((void *)cdata);
+
+	del_timer(&cdata->flush_timer);
 
 	kfree(cdata->buf);
 	kfree(cdata);

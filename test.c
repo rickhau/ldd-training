@@ -12,7 +12,6 @@ int main(int argc, char **argv)
   int i;
   char pix[4] = { 0x00, 0xff, 0x00, 0xff };
   //fd = open("/dev/cdata3", O_RDWR);
-  //fd = open("/dev/cdata3", O_RDWR);
   //fd = open("/dev/cdata", O_RDONLY);
   i = 10000;
   fd = open("/dev/cdata", O_RDWR); // WR: Write
