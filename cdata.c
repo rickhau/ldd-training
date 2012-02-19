@@ -52,7 +52,6 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	init_timer(&cdata->flush_timer);
 	init_timer(&cdata->sched_timer);
 
-
 	init_waitqueue_head(&cdata->wq);
 
 	filp->private_data = (void *)cdata;
@@ -126,7 +125,7 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	timer = &cdata->flush_timer;
 	sched = &cdata->sched_timer;
 	wq = &cdata->wq;
-	printk(KERN_INFO "CDATA: In cdata_write()\n");
+	//printk(KERN_INFO "CDATA: In cdata_write()\n");
         	
 	for (i = 0; i < size; i++){
 	  if (index >= BUF_SIZE){
@@ -199,9 +198,12 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
   int i,n ;
   unsigned long *fb;
   struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
+
   switch (cmd) {
     case CDATA_CLEAR:
-       n = *((int *) arg); // FIXME; dirty
+       //n = *((int *) arg); // FIXME; dirty
+       //copy_from_user(&n, &arg, 1);
+       get_user(n,(int*)arg);
        printk(KERN_INFO "Action: CDATA_CLEAR: %d pixel.\n", n);
        //fb = ioremap(0x33f00000, n*4);  // FIXME: dirty
 
@@ -211,7 +213,7 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
        // FIXME: unlock
        for( i = 0; i < n; i++)
          writel(0x00ff00ff, fb++);  
-       break;
+       return 0;
     case CDATA_RED:
        break;
     case CDATA_GREEN:
@@ -223,7 +225,7 @@ static int cdata_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
     case CDATA_WHITE:
        break;
   }
-  return 0;
+  return -ENOTTY;
 }
 
 static int cdata_flush(struct file *filp)
