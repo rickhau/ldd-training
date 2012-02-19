@@ -91,9 +91,14 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
         	
 	for (i = 0; i < size; i++){
 	  if (index >= BUF_SIZE){
+
 	     cdata->index = index;
+	     // FIXME: Kernel scheduling
 	     flush_lcd((void *)cdata);
 	     index = cdata->index;   // IMPORTANT: Use state machine concept to maintain. Do not use index = 0; not good!
+
+	     // FIXME: Process scheduling
+
           }
 	  //fb[index] = buf[i];  // wrong!! Can NOT access user space data directly
 	  copy_from_user(&pixel[index], &buf[i], 1);
