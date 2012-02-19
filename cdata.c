@@ -138,6 +138,10 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	     timer->data = (unsigned long)cdata;
 	     add_timer(timer);
 
+	     // You can setup one timer(timer) without sched
+	     // Timer expires, call flush_lcd() 
+	     // When flush_lcd() finish the write I/O, then wake up the process
+	     // Then you do notn need to maintain 2nd timer for process state change
 	     sched->expires = jiffies + 10;  // 1*HZ = 1 second
 	     sched->function = cdata_wake_up;
 	     sched->data = (unsigned long)cdata;
