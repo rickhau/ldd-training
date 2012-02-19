@@ -29,6 +29,7 @@ struct cdata_t {
   unsigned int index;
   unsigned int offset;
   struct timer_list flush_timer;
+  struct timer_list sched_timer;
 };
 
 
@@ -46,6 +47,7 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	cdata->index = 0;
 	cdata->offset = 0;
 	init_timer(&cdata->flush_timer);
+	init_timer(&cdata->sched_timer);
 	filp->private_data = (void *)cdata;
 	return 0;
 }
@@ -83,6 +85,14 @@ void flush_lcd(unsigned long *priv)
 void cdata_wake_up(unsigned long priv)
 {
    // FIXME: Wake up process (Switch process to ready)
+   struct cdata_t *cdata = (struct cdata_t *)filp->private_data;
+   struct timer_list *sched;
+
+   current->state = TASK_RUNNING;
+   schedule();
+
+   sched->expire = jiffies + 10;
+   add_timer(sched);
 }
 
 static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff_t *off)
@@ -92,10 +102,12 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	unsigned int i;
 	unsigned int index;
 	struct timer_list *timer;
+	struct timer_list *sched;
 	
 	pixel = cdata->buf;
 	index = cdata->index;
 	timer = &cdata->flush_timer;
+	sched = &cdata->sched_timer;
 	printk(KERN_INFO "CDATA: In cdata_write()\n");
         	
 	for (i = 0; i < size; i++){
@@ -109,11 +121,19 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 
 	     add_timer(timer);
 
+	     sched->expires = jiffies + 10;  // 1*HZ = 1 second
+	     sched->function = cdata_wake_up;
+	     sched->data = (unsigned long)cdata;
+	     add_timer(sched);
+repeat:
+
 	     // FIXME: Process scheduling
 	     current->state = TASK_INTERRUPTIBLE;
 	     schedule();
 
 	     index = cdata->index;   // IMPORTANT: Use state machine concept to maintain. Do not use index = 0; not good!
+	     if (index != 0)
+		goto repeat;
           }
 	  //fb[index] = buf[i];  // wrong!! Can NOT access user space data directly
 	  copy_from_user(&pixel[index], &buf[i], 1);
