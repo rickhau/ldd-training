@@ -9,8 +9,7 @@
 int main(int argc, char **argv)
 {
   int fd;
-  int i;
-  char pix[4] = { 0x00, 0xff, 0x00, 0xff }; // GREEN
+  //int i;
 #if 0
   char pix[4] = { 0x00, 0xff, 0x00, 0xff }; // GREEN
   char bpix[4] = { 0xff, 0x00, 0x00, 0x00 }; // BLUE 
@@ -38,10 +37,12 @@ int main(int argc, char **argv)
     }
   }
 #endif
-  while(1)
-    write(fd, pix, 4);
+  //while(1)
+  //  write(fd, pix, 4);
   //write(fd, "123", 3);
   //sleep(10);
   //close(fd);
+  mmap(0, 1024, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+  sleep(30);
   close(fd);
 }
