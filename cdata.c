@@ -20,7 +20,7 @@
 #define DEV_NAME "cdata"
 #define VERSION 6 
 
-#define BUF_SIZE (8)
+#define BUF_SIZE (10000)
 #define LCD_SIZE (320*240*4)
 
 struct cdata_t {
