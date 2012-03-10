@@ -10,17 +10,18 @@ int main(int argc, char **argv)
 {
   int fd;
   int i;
+  char pix[4] = { 0x00, 0xff, 0x00, 0xff }; // GREEN
 #if 0
   char pix[4] = { 0x00, 0xff, 0x00, 0xff }; // GREEN
-  char bpix[4] = { 0x00, 0x00, 0xff, 0x00 }; // BLUE 
+  char bpix[4] = { 0xff, 0x00, 0x00, 0x00 }; // BLUE 
   pid_t pid;
 #endif
   //fd = open("/dev/cdata3", O_RDWR);
   //fd = open("/dev/cdata", O_RDONLY);
-  i = 10000;
+//  i = 10000;
   fd = open("/dev/cdata", O_RDWR); // WR: Write
 //  printf("Going to fork()...\n");
-  ioctl(fd, CDATA_CLEAR, &i); 
+//  ioctl(fd, CDATA_CLEAR, &i); 
 #if  0
   pid = fork();
   //fd = open("/dev/cdata", O_RDWR); // WR: Write
@@ -37,7 +38,8 @@ int main(int argc, char **argv)
     }
   }
 #endif
-  //write(fd, pix, 4);
+  while(1)
+    write(fd, pix, 4);
   //write(fd, "123", 3);
   //sleep(10);
   //close(fd);
