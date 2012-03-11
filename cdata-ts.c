@@ -17,23 +17,38 @@
 
 #define CDATA_TS_MINOR 2
 
+void cdata_ts_handler(struct file *filp, struct pt_regs *reg)
+{
+	printk(KERN_INFO "data_ts: down....\n");
+
+}
+
 static int cdata_ts_open(struct inode *inode, struct file *filp)
 {
-	u32 reg;
+	//u32 reg;
 #if 0
 	// This coding style is hard to read in the future
-	// Using set_gpio_ctlr macro provided by chipset vendor is better to read
+	// Using set_gpio_ctrl macro provided by chipset vendor is better to read
 	reg = GPGCON; // Read value from GPGCON register
-	reg |= 0xff000000;
+	reg |= 0xff000000; // To set 4 pins to 1 , same as below 4 macro did
 	GPGCON = reg;
 #endif
+	//printk(KERN_INFO "GPGCON: %08x\n", reg);
 
 	set_gpio_ctrl(GPIO_YPON);
 	set_gpio_ctrl(GPIO_YMON);
 	set_gpio_ctrl(GPIO_XPON);
 	set_gpio_ctrl(GPIO_XMON);
 
-	//printk(KERN_INFO "GPGCON: %08x\n", reg);
+	ADCTSC = DOWN_INT | XP_PULL_UP_EN | \
+		 XP_AIN | XM_HIZ | YP_AIN | YM_GND | \
+		 XP_PST(WAIT_INT_MODE);
+
+	// Request touch panel IRQ 
+	if(request_irq(IRQ_TC, cdata_ts_handler, 0, "cdata-ts", 0)) {
+		printk(KERN_ALERT "cdata: request irq failed.\n");
+		return -1;
+	}
 
 	return 0;
 }
