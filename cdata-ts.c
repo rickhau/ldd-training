@@ -20,9 +20,21 @@
 static int cdata_ts_open(struct inode *inode, struct file *filp)
 {
 	u32 reg;
-	
+#if 0
+	// This coding style is hard to read in the future
+	// Using set_gpio_ctlr macro provided by chipset vendor is better to read
 	reg = GPGCON; // Read value from GPGCON register
-	printk(KERN_INFO "GPGCON: %08x\n", reg);
+	reg |= 0xff000000;
+	GPGCON = reg;
+#endif
+
+	set_gpio_ctrl(GPIO_YPON);
+	set_gpio_ctrl(GPIO_YMON);
+	set_gpio_ctrl(GPIO_XPON);
+	set_gpio_ctrl(GPIO_XMON);
+
+	//printk(KERN_INFO "GPGCON: %08x\n", reg);
+
 	return 0;
 }
 
