@@ -14,10 +14,15 @@
 #include <linux/input.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
-#include "cdata_ts_ioctl.h"
+
+#define CDATA_TS_MINOR 2
 
 static int cdata_ts_open(struct inode *inode, struct file *filp)
 {
+	u32 reg;
+	
+	reg = GPGCON; // Read value from GPGCON register
+	printk(KERN_INFO "GPGCON: %08x\n", reg);
 	return 0;
 }
 
@@ -51,7 +56,7 @@ static struct file_operations cdata_ts_fops = {
 };
 
 
-static  miscdevice cdata_ts_misc = {
+static struct miscdevice cdata_ts_misc = {
 	minor: 		CDATA_TS_MINOR,
 	name:		"cdata-ts",
 	fops:		&cdata_ts_fops,
@@ -63,7 +68,7 @@ static int cdata_ts_init_module(void)
    printk(KERN_INFO "CDATA-TS: Couldn't register a driver.\n");
    return -1; 
   }
-  printk(KERN_INFO "CDATA: In cdata_ts_init_module.\n");
+  printk(KERN_INFO "CDATA-TS: In cdata_ts_init_module.\n");
   return 0;
 }
 
