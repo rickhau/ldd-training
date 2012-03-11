@@ -20,16 +20,18 @@
 void cdata_bh(unsigned long);
 DECLARE_TASKLET(my_tasklet, cdata_bh, NULL);
 
+struct input_device ts_input;
+
 void cdata_ts_handler(struct file *filp, struct pt_regs *reg)
 {
 	printk(KERN_INFO "data_ts: TH....\n");
+	// FIXME: read(x,y) from ADC. To Read HW data referring to datasheet
 	tasklet_schedule(&my_tasklet);
 }
 
 void cdata_bh(unsigned long priv)
 {
 	printk(KERN_INFO "data_ts: BH down....\n");
-	while(1);
 }
 
 static int cdata_ts_open(struct inode *inode, struct file *filp)
@@ -58,6 +60,12 @@ static int cdata_ts_open(struct inode *inode, struct file *filp)
 		printk(KERN_ALERT "cdata: request irq failed.\n");
 		return -1;
 	}
+
+	// handler input device
+	ts_input.open = 
+	ts_input.close =
+
+	input_register_device(&ts_input);
 
 	return 0;
 }
