@@ -1,0 +1,52 @@
+# cat /dev/misc/cdata-ts
+cdata: request irq failed.
+cat: /dev/misc/cdata-ts: Operation not permitted
+# cat /proc/interrupts
+13:          0   DMA timer
+14:      11559   timer
+30:          0   RTC Alarm
+52:        396   serial_s3c2410_rx
+53:        574   serial_s3c2410_tx
+54:          0   serial_s3c2410_err
+61:         26   s3c2410-ts
+62:      40507   s3c2410-ts
+Err:         0
+# 
+         ^^^^^^
+        interrupt#
+
+IRQ_TC : 61, which is already occupied by s3c2410-ts
+
+You have to turn off touch screen driver by menuconfig
+
+<Character devices> => <*> Support S3C2410 TouchScreen
+
+make dep; make; make Image
+
+// After closeup S3C2410, it can be allocated by cdata-ts now.
+
+# cat /dev/misc/cdata-ts
+# cat /proc/interrupts
+13:          0   DMA timer
+14:       9931   timer
+30:          0   RTC Alarm
+52:        458   serial_s3c2410_rx
+53:        530   serial_s3c2410_tx
+54:          0   serial_s3c2410_err
+61:          0   cdata-ts
+Err:          0
+# 
+# data_ts: down....
+data_ts: down....
+data_ts: down....
+
+# cat /proc/interrupts
+13:          0   DMA timer
+14:      15805   timer
+30:          0   RTC Alarm
+52:        188   serial_s3c2410_rx
+53:        182   serial_s3c2410_tx
+54:          0   serial_s3c2410_err
+61:          3   cdata-ts
+Err:          0
+# 
