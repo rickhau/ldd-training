@@ -20,14 +20,15 @@
 void cdata_bh(unsigned long);
 DECLARE_TASKLET(my_tasklet, cdata_bh, NULL);
 
-struct input_dev ts_input;
-int x;
-int y;
+struct cdata_ts {
+  struct input_dev ts_input;
+  int x;
+  int y;
+};
 
 static int ts_input_open(struct input_dev *dev)
 {
-	input_report_abs(dev, ABS_X, x);
-	input_report_abs(dev, ABS_Y, y);
+
 }
 
 static int ts_input_close(struct input_dev *dev)
@@ -35,20 +36,36 @@ static int ts_input_close(struct input_dev *dev)
 
 }
 
-void cdata_ts_handler(struct file *filp, struct pt_regs *reg)
+void cdata_ts_handler(int irq, void *priv, struct pt_regs *reg)
 {
+	struct cdata_ts *cdata = (struct cdata_ts *)priv;	
+
 	printk(KERN_INFO "data_ts: TH....\n");
 	// FIXME: read(x,y) from ADC. To Read HW data referring to datasheet
+	cdata->x = 100;
+	cdata->y = 100;
+
+	my_tasklet.data = (unsigned long)cdata;
+
 	tasklet_schedule(&my_tasklet);
 }
 
 void cdata_bh(unsigned long priv)
 {
+	struct cdata_ts *cdata = (struct cdata_ts *)priv;
+	struct input_dev *dev = &cdata->ts_input;
+
 	printk(KERN_INFO "data_ts: BH down....\n");
+	input_report_abs(dev, ABS_X, cdata->x);
+	input_report_abs(dev, ABS_Y, cdata->y);
 }
 
 static int cdata_ts_open(struct inode *inode, struct file *filp)
 {
+
+	struct cdata_ts *cdata;
+
+	cdata = kmalloc(sizeof(struct cdata_ts), GFP_KERNEL);
 	//u32 reg;
 #if 0
 	// This coding style is hard to read in the future
@@ -69,16 +86,24 @@ static int cdata_ts_open(struct inode *inode, struct file *filp)
 		 XP_PST(WAIT_INT_MODE);
 
 	// Request touch panel IRQ 
-	if(request_irq(IRQ_TC, cdata_ts_handler, 0, "cdata-ts", 0)) {
+	if(request_irq(IRQ_TC, cdata_ts_handler, 0, "cdata-ts", (void *)cdata)) {
 		printk(KERN_ALERT "cdata: request irq failed.\n");
 		return -1;
 	}
 
 	// handler input device
-	ts_input.open = ts_input_open;
-	ts_input.close = ts_input_close;
+	cdata->ts_input.name = "cdata-ts";
+	cdata->ts_input.open = ts_input_open;
+	cdata->ts_input.close = ts_input_close;
+	// capabilities
+	cdata->ts_input.absbit[0] = BIT(ABS_X) | BIT(ABS_Y);
 
-	input_register_device(&ts_input);
+	input_register_device(&cdata->ts_input);
+
+	cdata->x = 0;
+	cdata->y = 0;
+
+	filp->private_data = (void *)cdata;
 
 	return 0;
 }
