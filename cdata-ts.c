@@ -16,9 +16,6 @@
 #include <asm/uaccess.h>
 #include "cdata_ts_ioctl.h"
 
-#define DEV_MAJOR 121
-#define DEV_NAME "cdata"
-
 static int cdata_ts_open(struct inode *inode, struct file *filp)
 {
 	return 0;
@@ -72,7 +69,7 @@ static int cdata_ts_init_module(void)
 
 static void cdata_ts_cleanup_module(void)
 {
-  unregister_chrdev(DEV_MAJOR, DEV_NAME);
+  misc_deregister(&cdata_ts_misc);
 }
 
 module_init(cdata_ts_init_module);
