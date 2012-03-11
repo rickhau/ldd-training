@@ -17,10 +17,19 @@
 
 #define CDATA_TS_MINOR 2
 
+void cdata_bh(unsigned long);
+DECLARE_TASKLET(my_tasklet, cdata_bh, NULL);
+
 void cdata_ts_handler(struct file *filp, struct pt_regs *reg)
 {
-	printk(KERN_INFO "data_ts: down....\n");
+	printk(KERN_INFO "data_ts: TH....\n");
+	while(1);
+	tasklet_schedule(&my_tasklet);
+}
 
+void cdata_bh(unsigned long priv)
+{
+	printk(KERN_INFO "data_ts: BH down....\n");
 }
 
 static int cdata_ts_open(struct inode *inode, struct file *filp)
