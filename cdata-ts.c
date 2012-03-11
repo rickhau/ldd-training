@@ -20,7 +20,20 @@
 void cdata_bh(unsigned long);
 DECLARE_TASKLET(my_tasklet, cdata_bh, NULL);
 
-struct input_device ts_input;
+struct input_dev ts_input;
+int x;
+int y;
+
+static int ts_input_open(struct input_dev *dev)
+{
+	input_report_abs(dev, ABS_X, x);
+	input_report_abs(dev, ABS_Y, y);
+}
+
+static int ts_input_close(struct input_dev *dev)
+{
+
+}
 
 void cdata_ts_handler(struct file *filp, struct pt_regs *reg)
 {
@@ -62,8 +75,8 @@ static int cdata_ts_open(struct inode *inode, struct file *filp)
 	}
 
 	// handler input device
-	ts_input.open = 
-	ts_input.close =
+	ts_input.open = ts_input_open;
+	ts_input.close = ts_input_close;
 
 	input_register_device(&ts_input);
 
