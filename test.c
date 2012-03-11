@@ -12,7 +12,6 @@ int main(int argc, char **argv)
   char *fb;
   int x;
   //int i;
-  char pix[4] = { 0x00, 0xff, 0x00, 0xff }; // GREEN
 #if 0
   char pix[4] = { 0x00, 0xff, 0x00, 0xff }; // GREEN
   char bpix[4] = { 0xff, 0x00, 0x00, 0x00 }; // BLUE 

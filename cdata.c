@@ -244,7 +244,13 @@ int cdata_mmap(struct file *filp, struct vm_area_struct *vma)
 	to = 0x33f00000;
 	size = vma->vm_end - vma->vm_start;
 
-	remap_page_range(from, to, size, PAGE_SHARED);
+	while(size){
+	  remap_page_range(from, to, PAGE_SIZE, PAGE_SHARED);
+
+	  from += PAGE_SIZE;
+	  to += PAGE_SIZE;
+	  size -= PAGE_SIZE;
+	}
 
 	printk(KERN_INFO "CDATA: in cdata_mmap(). \n");
 	printk(KERN_INFO "CDATA: start = %08x\n", vma->vm_start);

@@ -18,7 +18,6 @@
 
 #define DEV_MAJOR 121
 #define DEV_NAME "cdata"
-#define VERSION 1 
 
 static int cdata_ts_open(struct inode *inode, struct file *filp)
 {
@@ -54,11 +53,17 @@ static struct file_operations cdata_ts_fops = {
 	ioctl:		cdata_ts_ioctl,
 };
 
+
+static  miscdevice cdata_ts_misc = {
+	minor: 		CDATA_TS_MINOR,
+	name:		"cdata-ts",
+	fops:		&cdata_ts_fops,
+};
+
 static int cdata_ts_init_module(void)
 {
-  printk(KERN_INFO "CDATA: Exercise [ %d ]\n", VERSION);
-  if(register_chrdev(DEV_MAJOR, DEV_NAME, &cdata_ts_fops) < 0){
-   printk(KERN_INFO "CDATA: Couldn't register a device.\n");
+  if(misc_register(&cdata_ts_misc) < 0){
+   printk(KERN_INFO "CDATA-TS: Couldn't register a driver.\n");
    return -1; 
   }
   printk(KERN_INFO "CDATA: In cdata_ts_init_module.\n");
