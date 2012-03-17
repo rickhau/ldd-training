@@ -140,7 +140,9 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	for (i = 0; i < size; i++){
 	  if (index >= BUF_SIZE){
 
+	     down_interruptible(&cdata->sem);
 	     cdata->index = index;
+	     up(&cdata->sem);
 	     // Kernel scheduling
 	     timer->expires = jiffies + 5*HZ;  // 1*HZ = 1  second
 	     timer->function = flush_lcd;
@@ -167,7 +169,9 @@ repeat:
 
 	     // Every time, sched timer expires, it will read the index and check if index != 0 
 	     // Meaning flush_lcd has not finished yet. So, keep changing itself to ready state for next wake up.
+	     down_interruptible(&cdata->sem);
 	     index = cdata->index;   // IMPORTANT: Use state machine concept to maintain. Do not use index = 0; not good!
+	     up(&cdata->sem);
 
 	     if (index != 0)
 		goto repeat;
@@ -180,7 +184,10 @@ repeat:
 	  copy_from_user(&pixel[index], &buf[i], 1);
 	  index++;
 	}
+	
+	down_interruptible(&cdata->sem);
 	cdata->index = index;
+	up(&cdata->sem);
         //while(1) {
 	  //current->state=TASK_UNINTERRUPTIBLE;
 	//  current->state=TASK_INTERRUPTIBLE;
