@@ -11,6 +11,7 @@
 #include <linux/interrupt.h>
 #include <linux/irq.h>
 #include <linux/miscdevice.h>
+#include <linux/semaphore.h>
 #include <linux/input.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
@@ -32,6 +33,7 @@ struct cdata_t {
   struct timer_list sched_timer;
   //DECLARE_WAIT_QUEUE(wq);
   wait_queue_head_t wq;
+  struct semaphore sem;
 };
 
 
@@ -53,6 +55,8 @@ static int cdata_open(struct inode *inode, struct file *filp)
 	init_timer(&cdata->sched_timer);
 
 	init_waitqueue_head(&cdata->wq);
+
+	sema_init(&cdata->sem, 1);
 
 	filp->private_data = (void *)cdata;
 	return 0;
@@ -121,17 +125,15 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	wait_queue_t wait;
 	
 	// down/up is to deal with process re-entrancy
-	down();
-	// spin_lock_irqsave/spin_unlock_irqsave is to deal with data for IC and PC
-	// IC: Interrupt Context, PC: Process Context
-	spin_lock_irqsave(); 
+	down_interruptible(&cdata->sem);
+
 	pixel = cdata->buf;
 	index = cdata->index;
-	spin_unlock_irqsave();
 	timer = &cdata->flush_timer;
 	sched = &cdata->sched_timer;
 	wq = &cdata->wq;
-	up();
+
+	up(&cdata->sem);
 
 	//printk(KERN_INFO "CDATA: In cdata_write()\n");
         	
