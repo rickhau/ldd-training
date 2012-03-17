@@ -120,11 +120,19 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 	wait_queue_head_t *wq;
 	wait_queue_t wait;
 	
+	// down/up is to deal with process re-entrancy
+	down();
+	// spin_lock_irqsave/spin_unlock_irqsave is to deal with data for IC and PC
+	// IC: Interrupt Context, PC: Process Context
+	spin_lock_irqsave(); 
 	pixel = cdata->buf;
 	index = cdata->index;
+	spin_unlock_irqsave();
 	timer = &cdata->flush_timer;
 	sched = &cdata->sched_timer;
 	wq = &cdata->wq;
+	up();
+
 	//printk(KERN_INFO "CDATA: In cdata_write()\n");
         	
 	for (i = 0; i < size; i++){
