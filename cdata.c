@@ -79,12 +79,12 @@ void flush_lcd(unsigned long *priv)
 	int offset;
 	int i;
 
-	spin_lock(&cdata->lock);
+	spin_lock_irqsave(&cdata->lock);
 	fb = (unsigned char*)cdata->fb;
 	pixel = cdata->buf;
 	index = cdata->index;
 	offset = cdata->offset;
-	spin_unlock(&cdata->lock);
+	spin_unlock_irqsave(&cdata->lock);
 
 	for( i = 0; i < index; i++ ){
 	  writeb(pixel[i], fb+offset);
