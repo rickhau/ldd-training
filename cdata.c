@@ -168,11 +168,11 @@ static ssize_t cdata_write(struct file *filp, const char *buf, size_t size, loff
 
 	     wait.flags = 0;
 	     wait.task = current;
-	     add_wait_queue(wq,&wait); 
 repeat:
 
+	     /* SMP Safe */
+	     prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
 	     // Process scheduling
-	     current->state = TASK_INTERRUPTIBLE;
 	     schedule();
 
 	     // Every time, sched timer expires, it will read the index and check if index != 0 
